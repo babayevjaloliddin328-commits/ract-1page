@@ -1,88 +1,90 @@
-import { render } from "@testing-library/react"
-import'./App.css' 
+import { useEffect, useState } from 'react';
+import './App.css';
+import Benefits from './components/Benefits';
+import CategorySection from './components/CategorySection';
+import Footer from './components/Footer';
+import Header from './components/Header';
+import Intro from './components/Intro';
+import ProductSection from './components/ProductSection';
+import PromoSection from './components/PromoSection';
 
+const API_URL = 'https://fakestoreapi.com/products';
 
+const catalogItems = [
+  { name: 'Telefon', icon: '📱' },
+  { name: 'Kompyuter', icon: '🖥' },
+  { name: 'Aqlli soatlar', icon: '⌚' },
+  { name: 'Kamera', icon: '📷', active: true },
+  { name: 'Quloqchinlar', icon: '🎧' },
+  { name: 'Aksessuarlar', icon: '🧩' }
+];
 
-const App = ()=>{
-  render(
+function App() {
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    <header>
-        <h1>Добро пожаловать!</h1>
-        <p>Мой первый веб-сайт</p>
+  useEffect(() => {
+    const controller = new AbortController();
 
-    <nav>
-        <ul>
-            <li><a href="#about">О себе</a></li>
-            <li><a href="#skills">Навыки</a></li>
-            <li><a href="#counter">Счётчик</a></li>
-            <li><a href="#contact">Контакты</a></li>
-        </ul>
-    </nav>
+    async function loadProducts() {
+      try {
+        setIsLoading(true);
+        setError('');
 
-    <div class="container">
-        <section id="about">
-            <h2>О себе</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>Привет! Я начинающий веб-разработчик. Изучаю HTML, CSS и JavaScript.</p>
-                    <p>Мне нравится создавать красивые и функциональные веб-сайты. Это мой первый проект, и я продолжаю учиться каждый день!</p>
-                </div>
-                <div class="about-image">
-                    Фото
-                </div>
-            </div>
-        </section>
+        const response = await fetch(API_URL, { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
 
-        <section id="skills">
-            <h2>Мои навыки</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <h3>HTML</h3>
-                    <p>Создание структуры веб-страниц с использованием семантических тегов.</p>
-                </div>
-                <div class="skill-card">
-                    <h3>CSS</h3>
-                    <p>Стилизация элементов, работа с Flexbox и Grid.</p>
-                </div>
-                <div class="skill-card">
-                    <h3>JavaScript</h3>
-                    <p>Базовое программирование, работа с DOM и событиями.</p>
-                </div>
-            </div>
-        </section>
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError("Tovarlarni yuklashda xatolik bo'ldi. Keyinroq urinib ko'ring.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-        <section id="counter">
-            <h2>Интерактивный счётчик</h2>
-            <div id="counter-display">0</div>
-            <div class="counter-buttons">
-                <button onclick="decrementCounter()">-</button>
-                <button onclick="resetCounter()">Сброс</button>
-                <button onclick="incrementCounter()">+</button>
-            </div>
-        </section>
+    loadProducts();
 
-        <section id="contact">
-            <h2>Свяжитесь со мной</h2>
-            <form class="contact-form" onsubmit="handleSubmit(event)">
-                <div class="form-group">
-                    <label for="name">Имя:</label>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                </div>
-                <div class="form-group">
-                    <label for="message">Сообщение:</label>
-                    <textarea id="message" name="message" required></textarea>
-                </div>
-                <button type="submit">Отправить</button>
-            </form>
-        </section>
+    return () => controller.abort();
+  }, []);
+
+  const discountedProducts = products.slice(0, 5);
+  const popularProducts = products.slice(5, 10);
+  const allProducts = products.slice(10, 18);
+
+  return (
+    <div className="app">
+      <Header />
+      <main>
+        <Intro />
+
+        {isLoading && <p className="status-message">Yuklanmoqda...</p>}
+        {error && <p className="status-message error">{error}</p>}
+
+        {!isLoading && !error && (
+          <>
+            <CategorySection categories={catalogItems} />
+            <ProductSection title="Yangi chegirmalar" products={discountedProducts} showTimer />
+            <ProductSection title="Ommabop mahsulotlar" products={popularProducts} />
+            <PromoSection />
+            <ProductSection
+              title="Barcha Mahsulotlarimiz"
+              products={allProducts}
+              showRating
+              buttonLabel="Parchasini ko'rish"
+            />
+            <Benefits />
+          </>
+        )}
+      </main>
+      <Footer />
     </div>
-
-    <footer>
-        <p>&copy; 2024 Мой первый сайт. Все права защищены.</p>
-    </footer>
-</header>
-  )
+  );
 }
-export default App; 
+
+export default App;
