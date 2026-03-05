@@ -1,23 +1,22 @@
+import { NavLink } from 'react-router-dom';
+
 function Navbar() {
   return (
-    <div className="navbar-wrap">
-      <div className="container navbar">
-        <h1 className="brand">BrandLogo</h1>
-        <nav className="nav-links" aria-label="Main navigation">
-          <a href="/">Bosh sahifa</a>
-          <a href="/">Katalog</a>
-          <a href="/">Haqimizda</a>
-          <a href="/">Aloqa</a>
-        </nav>
-        <div className="nav-actions">
-          <label className="search-box" htmlFor="search-input">
-            <input id="search-input" type="text" placeholder="So'zni qidiring" />
-            <span>⌕</span>
-          </label>
-          <button>◉ Aloqaga chiqish</button>
-        </div>
+    <nav className="navbar">
+      <h2>Product CRUD</h2>
+
+      <div className="nav-links">
+        <NavLink to="/products" className={({ isActive }) => (isActive ? 'active' : '')}>
+          Products
+        </NavLink>
+        <NavLink to="/products/create" className={({ isActive }) => (isActive ? 'active' : '')}>
+          Yangi Qo'shish
+        </NavLink>
+        <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
+          Admin
+        </NavLink>
       </div>
-    </div>
+    </nav>
   );
 }
 

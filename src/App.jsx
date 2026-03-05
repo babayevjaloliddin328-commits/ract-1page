@@ -1,88 +1,55 @@
-import { useEffect, useState } from 'react';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Benefits from './components/Benefits';
-import CategorySection from './components/CategorySection';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import Intro from './components/Intro';
-import ProductSection from './components/ProductSection';
-import PromoSection from './components/PromoSection';
-
-const API_URL = 'https://fakestoreapi.com/products';
-
-const catalogItems = [
-  { name: 'Telefon', icon: '📱' },
-  { name: 'Kompyuter', icon: '🖥' },
-  { name: 'Aqlli soatlar', icon: '⌚' },
-  { name: 'Kamera', icon: '📷', active: true },
-  { name: 'Quloqchinlar', icon: '🎧' },
-  { name: 'Aksessuarlar', icon: '🧩' }
-];
+import Navbar from './components/Navbar';
+import Products from './pages/Products';
+import CreateProduct from './pages/CreateProduct';
+import NotFound from './pages/NotFound';
+import Admin from './pages/Admin';
+import { useState } from 'react';
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const addProductToList = (newProduct) => {
+    setProducts((prev) => [newProduct, ...prev]);
+  };
 
-    async function loadProducts() {
-      try {
-        setIsLoading(true);
-        setError('');
+  const updateProductInList = (updatedProduct) => {
+    setProducts((prev) =>
+      prev.map((item) => (item.id === updatedProduct.id ? { ...item, ...updatedProduct } : item))
+    );
+  };
 
-        const response = await fetch(API_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setProducts(data);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          setError("Tovarlarni yuklashda xatolik bo'ldi. Keyinroq urinib ko'ring.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadProducts();
-
-    return () => controller.abort();
-  }, []);
-
-  const discountedProducts = products.slice(0, 5);
-  const popularProducts = products.slice(5, 10);
-  const allProducts = products.slice(10, 18);
+  const deleteProductFromList = (id) => {
+    setProducts((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
     <div className="app">
-      <Header />
-      <main>
-        <Intro />
+      <Navbar />
 
-        {isLoading && <p className="status-message">Yuklanmoqda...</p>}
-        {error && <p className="status-message error">{error}</p>}
-
-        {!isLoading && !error && (
-          <>
-            <CategorySection categories={catalogItems} />
-            <ProductSection title="Yangi chegirmalar" products={discountedProducts} showTimer />
-            <ProductSection title="Ommabop mahsulotlar" products={popularProducts} />
-            <PromoSection />
-            <ProductSection
-              title="Barcha Mahsulotlarimiz"
-              products={allProducts}
-              showRating
-              buttonLabel="Parchasini ko'rish"
-            />
-            <Benefits />
-          </>
-        )}
-      </main>
-      <Footer />
+      <div className="container">
+        <Routes>
+          <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route
+            path="/products"
+            element={
+              <Products
+                products={products}
+                setProducts={setProducts}
+                onUpdate={updateProductInList}
+                onDelete={deleteProductFromList}
+              />
+            }
+          />
+          <Route
+            path="/products/create"
+            element={<CreateProduct onCreate={addProductToList} />}
+          />
+          <Route path="/admin" element={<Admin products={products} />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </div>
   );
 }
