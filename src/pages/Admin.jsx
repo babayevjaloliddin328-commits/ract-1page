@@ -9,7 +9,6 @@ function Admin({ products }) {
   return (
     <section>
       <h1>Admin Panel</h1>
-      <p>Bu oddiy boshqaruv paneli. Mahsulotlar bo'yicha qisqa statistika shu yerda.</p>
 
       <div className="admin-grid">
         <article className="admin-card">
